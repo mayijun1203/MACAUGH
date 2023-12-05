@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Mapper</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.12.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/mapboxgl-spiderifier@1.0.10/index.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/mapboxgl-spiderifier@1.0.10/index.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        #mainmap {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .spiderpin {
+            position: relative;
+            width: 1rem;
+            height: 1.168rem;
+            margin-left: -0.44rem;
+            margin-top: -0.55rem;
+            background-image: url("https://raw.githubusercontent.com/mayijun1203/PHOTOMAPPERGH/main/icon.png");
+            background-size: 1rem 1.168rem;
+            background-repeat: no-repeat;
+        }
+
+        .spider-leg-container .spider-leg-line {
+            background-color: #f4f4f4;
+        }
+
+        #basemap {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 0.75rem;
+            width: auto;
+            height: auto;
+        }
+
+        #light {
+            width: 4rem;
+            height: 4rem;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 100);
+            border-radius: 4px;
+        }
+
+        #light:hover {
+            box-shadow: 0 0 0 2px rgba(200, 200, 200, 100);
+        }
+
+        #offcanvasButton {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+        }
+
+        .card {
+            width: 10rem;
+            cursor: pointer;
+        }
+
+        .card-text {
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid p-0" id="mainmap"> </div> <!-- placeholder for main map -->
+
+    <div class="container-fluid p-0" id="basemap">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-auto">
+                <a href="light.html" id="maplink"><img
+                        src="https://raw.githubusercontent.com/mayijun1203/PHOTOMAPPERGH/main/light.png" id="light"></a>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn btn-light" id="offcanvasButton" type="button" data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasRight">Photo Viewer</button>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight">
+        <div class="offcanvas-header">
+            <h3 class="offcanvas-title" id="offcanvasRightLabel">Photo Viewer</h3>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="row" id="offcanvasBody">
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        'use strict';
+        // Set MapBox token
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWF5aWp1biIsImEiOiJjaXg4ZmlyY20wMDBjMm9tcjI0bjQ0Z21zIn0.Io0XJ4JelN903V9HGo4TfQ'; // still need to find a way to store the token
+
+
+
+        // Initialize the map
+        const map = new mapboxgl.Map({ // creating a new map
+            container: 'mainmap', // same as the div id to place the map
+            maxZoom: 22, // max zoom levl
+            style: 'mapbox://styles/mapbox/satellite-streets-v12', // satelilite base map
+            hash: true, // make sure it's on to get the url with map view
+            attributionControl: false, // show the credit bar
+            preserveDrawingBuffer: true, // make sure it's on to allow printing
+            center: [113.5518, 22.1627], // testing to get the centroid of bounds
+            zoom: 11, // set the initial zoom of the map view
+        });
+
+        // // Auto fitting to the bounds
+        // fetch('https://raw.githubusercontent.com/mayijun1203/PHOTOMAPPERGH/main/photoattr.geojson')
+        //     .then((response) => response.json())
+        //     .then((data) => map.fitBounds(turf.bbox(data), { padding: 100 }));
+
+
+        // Add layers
+        map.on('load', function () {
+            map.loadImage(
+                'https://raw.githubusercontent.com/mayijun1203/PHOTOMAPPERGH/main/icon.png',
+                (error, image) => {
+                    if (error) throw error;
+
+                    // Add the image to the map style.
+                    map.addImage('dirArrow', image);
+
+
+                    const layerContentList = []; // store all the layer contents
+
+                    // Add navigation control
+                    map.addControl(new mapboxgl.NavigationControl({
+                        showCompass: true, // show compass
+                        showZoom: true, // show zoom
+                        visualizePitch: true, // show pitch
+                    }),
+                        'top-left', // control position
+                    );
+
+                    // Add full screen control
+                    map.addControl(new mapboxgl.FullscreenControl({
+                        container: document.querySelector('body'),
+                    }),
+                        'top-left', // control position
+                    );
+
+
+
+                    // Add points
+                    // Set layer contents
+                    const layerContent = {
+                        'sourceId': 'photoattr', // source id
+                        'sourceType': 'geojson', // source type
+                        'sourceData': 'photoattr.geojson', // data source
+                        'cluster': true, // whether enable clustering
+                        'clusterMaxZoom': 22, // max zoom level for clustering
+                        'clusterRadius': 20, // radius of clusters
+                        'unclusteredId': 'unclustered', // layer id
+                        'unclusteredType': 'symbol', // symbology type
+                        'unclusteredVisibility': 'visible', // visibility of the layer
+                        'unclusteredOverlap': true, // icon allow overlap
+                        'unclusteredOpacity': 1, // icon opacity
+                        'unclusteredSize': 0.08, // icon radius
+                        'unclusteredRotate': ['get', 'bearing'], // icon rotate
+                        'unclusteredOutlineColor': 'rgba(255,255,255,0)',  // outline color; for legend purpose only
+                        'clusteredId': 'clustered', // layer id
+                        'clusteredType': 'circle', // symbology type
+                        'clusteredVisibility': 'visible', // visibility of the layer
+                        'clusteredColor': ['step', ['get', 'point_count'], '#ffcd03', 5, '#a3cf62', 10, '#00a9a5'], // color for each category; use rgba
+                        'clusteredOpacity': 1, // circle opacity
+                        'clusteredRadius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40], // circle radius; change size based on point counts
+                        'clusteredStrokeColor': 'rgb(255,255,255)', // circle stroke color
+                        'clusteredStrokeOpacity': 1, // circle stroke opacity
+                        'clusteredStrokeWidth': 0, // circle stroke width
+                        'clusteredOutlineColor': 'rgba(255,255,255,0)',  // outline color; for legend purpose only
+                        'clusterLabelId': 'clusterlabel',
+                        'clusterLabelType': 'symbol', // symbology type
+                        'clusterLabelVisibility': 'visible', // visibility of the layer
+                        'clusterLabelOverlap': true, // text allow overlap
+                        'clusterLabelTextField': ['get', 'point_count_abbreviated'], // text for the cluster label
+                        'clusterLabelTextFont': ['Open Sans Semibold', 'Arial Unicode MS Bold'], // text font for the cluster label
+                        'clusterLabelTextSize': 14, // text size for the cluster label
+                        'clusterPointId': 'clusterpoint',
+                        'clusterPointType': 'circle', // symbology type
+                        'clusterPointVisibility': 'visible', // visibility of the layer
+                        'clusterPointColor': '#ffcd03',
+                        'clusterPointOpacity': 1, // circle opacity
+                        'clusterPointRadius': 5,
+                        'clusterPointStrokeColor': 'rgb(255,255,255)', // circle stroke color
+                        'clusterPointStrokeOpacity': 1, // circle stroke opacity
+                        'clusterPointStrokeWidth': 0, // circle stroke width
+                    };
+
+                    // Add layer content to the overall layer content list
+                    layerContentList.push(layerContent);
+
+                    // Add data source
+                    map.addSource(layerContent['sourceId'], {
+                        'type': layerContent['sourceType'],
+                        'data': layerContent['sourceData'],
+                        'cluster': layerContent['cluster'],
+                        'clusterMaxZoom': layerContent['clusterMaxZoom'],
+                        'clusterRadius': layerContent['clusterRadius'],
+                    });
+
+                    // Add clustered point layer
+                    map.addLayer({
+                        'id': layerContent['clusterPointId'],
+                        'type': layerContent['clusterPointType'],
+                        'source': layerContent['sourceId'],
+                        'filter': ['has', 'point_count'],
+                        'layout': {
+                            'visibility': layerContent['clusterPointVisibility'],
+                        },
+                        'paint': {
+                            'circle-color': layerContent['clusterPointColor'],
+                            'circle-opacity': layerContent['clusterPointOpacity'],
+                            'circle-radius': layerContent['clusterPointRadius'],
+                            'circle-stroke-color': layerContent['clusterPointStrokeColor'],
+                            'circle-stroke-opacity': layerContent['clusterPointStrokeOpacity'],
+                            'circle-stroke-width': layerContent['clusterPointStrokeWidth'],
+                        },
+                    });
+
+                    // Add clustered circle layer
+                    map.addLayer({
+                        'id': layerContent['clusteredId'],
+                        'type': layerContent['clusteredType'],
+                        'source': layerContent['sourceId'],
+                        'filter': ['has', 'point_count'],
+                        'layout': {
+                            'visibility': layerContent['clusteredVisibility'],
+                        },
+                        'paint': {
+                            'circle-color': layerContent['clusteredColor'],
+                            'circle-opacity': layerContent['clusteredOpacity'],
+                            'circle-radius': layerContent['clusteredRadius'],
+                            'circle-stroke-color': layerContent['clusteredStrokeColor'],
+                            'circle-stroke-opacity': layerContent['clusteredStrokeOpacity'],
+                            'circle-stroke-width': layerContent['clusteredStrokeWidth'],
+                        },
+                    });
+
+                    // Add clustered label layer
+                    map.addLayer({
+                        'id': layerContent['clusterLabelId'],
+                        'type': layerContent['clusterLabelType'],
+                        'source': layerContent['sourceId'],
+                        'filter': ['has', 'point_count'],
+                        'layout': {
+                            'visibility': layerContent['clusterLabelVisibility'],
+                            'text-allow-overlap': layerContent['clusterLabelOverlap'],
+                            'text-field': layerContent['clusterLabelTextField'],
+                            'text-font': layerContent['clusterLabelTextFont'],
+                            'text-size': layerContent['clusterLabelTextSize'],
+                        },
+                    });
+
+                    // Add unclustered layer
+                    map.addLayer({
+                        'id': layerContent['unclusteredId'],
+                        'type': layerContent['unclusteredType'],
+                        'source': layerContent['sourceId'],
+                        'filter': ['!', ['has', 'point_count']],
+                        'layout': {
+                            'visibility': layerContent['unclusteredVisibility'],
+                            'icon-allow-overlap': layerContent['unclusteredOverlap'],
+                            'icon-image': 'dirArrow',
+                            'icon-size': layerContent['unclusteredSize'],
+                            'icon-rotate': layerContent['unclusteredRotate'],
+                        },
+                        'paint': {
+                            'icon-opacity': layerContent['unclusteredOpacity'],
+                        },
+                    });
+
+
+                    // Click on a cluster
+                    map.on('click', 'clustered', (e) => {
+                        let features = map.queryRenderedFeatures(e.point, {
+                            layers: ['clustered'],
+                        });
+                        let clusterId = features[0].properties.cluster_id;
+                        map.getSource('photoattr').getClusterExpansionZoom(
+                            clusterId,
+                            (err, zoom) => {
+                                if (err) return;
+                                map.easeTo({
+                                    center: features[0].geometry.coordinates,
+                                    zoom: zoom,
+                                });
+                            },
+                        );
+                    });
+                    // Add hover events
+                    map.on('mouseenter', 'clustered', () => {
+                        map.getCanvas().style.cursor = 'pointer';
+                    });
+                    map.on('mouseleave', 'clustered', () => {
+                        map.getCanvas().style.cursor = '';
+                    });
+
+
+                    // Create function to convert degree to direction
+                    function degree2Direction(angle) {
+                        const directions = ['N ↑', 'NE ↗', 'E →', 'SE ↘', 'S ↓', 'SW ↙', 'W ←', 'NW ↖'];
+                        return directions[Math.round(angle / 45) % 8];
+                    }
+
+
+                    // Spiderfy if zoomed
+                    map.on('move', () => {
+                        const spiders = Array.from(document.getElementsByClassName('spider-leg-container'));
+                        spiders.forEach(spider => {
+                            spider.remove();
+                        });
+                        if (map.getZoom() > 18) {
+                            map.setLayoutProperty('clustered', 'visibility', 'none');
+                            map.setLayoutProperty('clusterlabel', 'visibility', 'none');
+                            let features = map.queryRenderedFeatures({
+                                layers: ['clusterpoint'],
+                            });
+                            for (let i = 0; i < features.length; i++) {
+                                // Create spiderifier
+                                let spiderifier = new MapboxglSpiderifier(map, {
+                                    circleSpiralSwitchover: 9,
+                                    initializeLeg: function (spiderLeg) {
+                                        // Customize pin
+                                        let spiderPin = spiderLeg.elements.pin;
+                                        spiderPin.className = 'spiderpin';
+                                        spiderPin.style.transform = 'rotate(' + spiderLeg.feature.bearing + 'deg)';
+                                        // Add popup
+                                        let spiderPopup = new mapboxgl.Popup({
+                                            closeButton: true, // close button
+                                            closeOnClick: true, // close if click on map
+                                            closeOnMove: false, // close if move the map
+                                            anchor: 'bottom', // anchor of the popup
+                                            maxWidth: 'none', // max width of the popoup; 'none' to fit to the content                
+                                            offset: MapboxglSpiderifier.popupOffsetForSpiderLeg(spiderLeg),
+                                        });
+                                        let description = "<b>Photo ID: </b><span>" + spiderLeg.feature.photo + "</span><br>"; // description in the popup
+                                        description += "<b>Datetime: </b><span>" + spiderLeg.feature.datetime + "</span><br>";
+                                        description += "<b>Direction: </b><span>" + degree2Direction(spiderLeg.feature.bearing) + "</span><br>";
+                                        description += "<a target='_blank' href='photo/" + spiderLeg.feature.photo + "'><img src='photo/" + spiderLeg.feature.photo + "' width=300rem>";
+                                        spiderPopup.setHTML(description);
+                                        spiderLeg.mapboxMarker.setPopup(spiderPopup);
+                                    },
+                                });
+                                // Apply spiderifier
+                                let clusterId = features[i].properties.cluster_id;
+                                map.getSource('photoattr').getClusterLeaves(
+                                    clusterId, 100, 0,
+                                    (err, leaves) => {
+                                        if (err) return;
+                                        let markers = [];
+                                        for (let i = 0; i < leaves.length; i++) {
+                                            markers.push(leaves[i].properties);
+                                        };
+                                        spiderifier.spiderfy(features[i].geometry.coordinates, markers);
+                                    }
+                                );
+                            };
+                        } else {
+                            map.setLayoutProperty('clustered', 'visibility', 'visible');
+                            map.setLayoutProperty('clusterlabel', 'visibility', 'visible');
+                        };
+                    });
+
+
+                    // Change basemap switch link to current view
+                    map.on('render', () => {
+                        document.getElementById('maplink').href = window.location.href.replace('satellite', 'light');
+                    });
+
+
+
+                    // Add unclustered popup
+                    // Add popup
+                    let popup = new mapboxgl.Popup({
+                        closeButton: true, // close button
+                        closeOnClick: true, // close if click on map
+                        closeOnMove: false, // close if move the map
+                        anchor: 'bottom', // anchor of the popup
+                        offset: 0, // offset from the feature
+                        maxWidth: 'none', // max width of the popoup; 'none' to fit to the content                
+                    });
+                    // Add click event
+                    function clickOnMap(e) {
+                        let coordinates = e.features[0].geometry.coordinates.slice(); // get point coordinates
+                        let description = "<b>Photo ID: </b><span>" + e.features[0].properties.photo + "</span><br>"; // description in the popup
+                        description += "<b>Datetime: </b><span>" + e.features[0].properties.datetime + "</span><br>";
+                        description += "<b>Direction: </b><span>" + degree2Direction(e.features[0].properties.bearing) + "</span><br>";
+                        description += "<a target='_blank' href='photo/" + e.features[0].properties.photo + "'><img src='photo/" + e.features[0].properties.photo + "' width=300rem>";
+                        popup.setLngLat(coordinates).setHTML(description).addTo(map); //add popup
+                    }
+                    map.on('click', 'unclustered', clickOnMap);
+                    // Add hover events
+                    map.on('mouseenter', 'unclustered', function () {
+                        map.getCanvas().style.cursor = 'pointer'; // mouse becoming pointer
+                    });
+                    map.on('mouseleave', 'unclustered', function () {
+                        map.getCanvas().style.cursor = '';
+                    });
+
+
+
+                    // Add photos to photo viewer
+                    async function fillPhotoViewer() {
+                        let response = await fetch("photoattr.geojson");
+                        let jsonData = await response.json();
+                        for (let i = 0; i < jsonData.features.length; i++) {
+                            let offcanvasCol = document.createElement('div');
+                            offcanvasCol.className = "col-auto";
+                            let offcanvasCard = document.createElement('div');
+                            offcanvasCard.className = "card";
+                            offcanvasCard.id = jsonData.features[i].properties.photo.split('.')[0];
+                            let offcanvasImg = document.createElement('img');
+                            offcanvasImg.src = "photo/" + jsonData.features[i].properties.photo;
+                            offcanvasImg.className = "card-img";
+                            let offcanvasCardBody = document.createElement('div');
+                            offcanvasCardBody.className = "card-body";
+                            let offcanvasCardText = document.createElement('p');
+                            offcanvasCardText.className = "card-text";
+                            offcanvasCardText.innerHTML = jsonData.features[i].properties.photo.split('.')[0] + '<br><br>';
+                            offcanvasCard.appendChild(offcanvasImg);
+                            offcanvasCardBody.appendChild(offcanvasCardText);
+                            offcanvasCol.appendChild(offcanvasCard);
+                            offcanvasCol.appendChild(offcanvasCardBody);
+                            offcanvasBody.appendChild(offcanvasCol);
+                            offcanvasCard.addEventListener('click', function (e) {
+                                map.easeTo({
+                                    center: [jsonData.features[i].properties.long, jsonData.features[i].properties.lat],
+                                });
+                                console.log(offcanvasCard.id)
+                                let coordinates = [jsonData.features[i]['properties']['long'], jsonData.features[i]['properties']['lat']]; // get point coordinates
+                                let description = "<b>Photo ID: </b><span>" + jsonData.features[i].properties.photo + "</span><br>"; // description in the popup
+                                description += "<b>Datetime: </b><span>" + jsonData.features[i].properties.datetime + "</span><br>";
+                                description += "<b>Direction: </b><span>" + degree2Direction(jsonData.features[i].properties.bearing) + "</span><br>";
+                                description += "<a target='_blank' href='photo/" + jsonData.features[i].properties.photo + "'><img src='photo/" + jsonData.features[i].properties.photo + "' width=300rem>";
+                                popup.setLngLat(coordinates).setHTML(description).addTo(map); //add popup
+                            });
+                        };
+                    };
+                    fillPhotoViewer();
+                });
+        });
+    </script>
+</body>
+
+</html>
