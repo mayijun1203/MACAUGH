@@ -17,6 +17,7 @@
     <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/mapboxgl-spiderifier@1.0.10/index.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/mapboxgl-spiderifier@1.0.10/index.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
 
     <style>
         body {
@@ -101,11 +102,26 @@
 
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight">
         <div class="offcanvas-header">
-            <h3 class="offcanvas-title" id="offcanvasRightLabel">Photo Viewer</h3>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+            <div class="container-fluid p-0">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-auto" id="offcanvasExpand" style="display:block">
+                        <button type="button" class="btn btn-light btn-sm bi bi-arrow-bar-left"></button>
+                    </div>
+                    <div class="col-auto" id="offcanvasCollapse" style="display:none">
+                        <button type="button" class="btn btn-light btn-sm bi bi-arrow-bar-right"></button>
+                    </div>
+                    <div class="col-auto">
+                        <h3 class="offcanvas-title" id="offcanvasRightLabel">Photo Viewer</h3>
+                    </div>
+                    <div class="col-auto" id="offcanvasClose">
+                        <button type="button" class="btn btn-light btn-sm bi bi-x-lg"
+                            data-bs-dismiss="offcanvas"></button>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="offcanvas-body">
-            <div class="row" id="offcanvasBody">
+            <div class="row justify-content-between align-items-center" id="offcanvasBody">
             </div>
         </div>
     </div>
@@ -459,10 +475,29 @@
                                 description += "<b>Direction: </b><span>" + degree2Direction(jsonData.features[i].properties.bearing) + "</span><br>";
                                 description += "<a target='_blank' href='photo/" + jsonData.features[i].properties.photo + "'><img src='photo/" + jsonData.features[i].properties.photo + "' width=300rem>";
                                 popup.setLngLat(coordinates).setHTML(description).addTo(map); //add popup
+                                if (document.getElementById("offcanvasExpand").style.display == "none") {
+                                    document.getElementsByClassName("offcanvas")[0].style.width = "400px";
+                                    document.getElementById("offcanvasExpand").style.display = "inline-block";
+                                    document.getElementById("offcanvasCollapse").style.display = "none";
+                                }; //collapse photo viewer if expanded
                             });
                         };
                     };
                     fillPhotoViewer();
+
+
+
+                    // Expand and collapse photo viewer
+                    offcanvasExpand.addEventListener('click', function () {
+                        document.getElementsByClassName("offcanvas")[0].style.width = "100%";
+                        document.getElementById("offcanvasExpand").style.display = "none";
+                        document.getElementById("offcanvasCollapse").style.display = "inline-block";
+                    });
+                    offcanvasCollapse.addEventListener('click', function () {
+                        document.getElementsByClassName("offcanvas")[0].style.width = "400px";
+                        document.getElementById("offcanvasExpand").style.display = "inline-block";
+                        document.getElementById("offcanvasCollapse").style.display = "none";
+                    });
                 });
         });
     </script>
