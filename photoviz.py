@@ -13,7 +13,7 @@ pd.options.display.max_columns=100
 
 
 # EXIF list
-imgpath=path+'original/IMG_5741.JPG'
+imgpath=path+'original/IMG_3338.JPG'
 with open(imgpath,'rb') as src:
     img=exif.Image(src)
 img.get_all()
