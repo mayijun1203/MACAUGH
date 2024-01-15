@@ -178,9 +178,93 @@
 
 
 
+                    // Add lot lines
+                    // Set layer contents
+                    var layerContent = {
+                        'sourceid': 'lotlines', // source id
+                        'sourcetype': 'geojson', // source type
+                        'sourcedata': 'Taipa_Central2_Lot.geojson', // data source
+                        'layerid': 'lotlines', // layer id
+                        'layertype': 'line', // symbology type
+                        'layername': 'Lot Lines', // layer name for the legend
+                        'layerlinecap': 'round', // line endings; butt/round/square
+                        'layerlinejoin': 'round', // line joining; bevel/round/miter
+                        'layervisibility': 'visible', // visibility of the layer
+                        'layercolor': 'rgba(237, 102, 93, 1)', // color for each category; use rgba
+                        'layeropacity': 1, // line opacity
+                        'layerwidth': 2, // line width
+                        'layeroutlinecolor': 'rgba(255,255,255,0)',  // outline color; for legend purpose only
+                    };
+
+                    // Add layer content to the overall layer content list
+                    layerContentList.push(layerContent);
+
+                    // Add data source
+                    map.addSource(layerContent['sourceid'], {
+                        'type': layerContent['sourcetype'],
+                        'data': layerContent['sourcedata'],
+                    });
+
+                    // Add line layer
+                    map.addLayer({
+                        'id': layerContent['layerid'],
+                        'type': layerContent['layertype'],
+                        'source': layerContent['sourceid'],
+                        'layout': {
+                            'line-cap': layerContent['layerlinecap'],
+                            'line-join': layerContent['layerlinejoin'],
+                            'visibility': layerContent['layervisibility'],
+                        },
+                        'paint': {
+                            'line-color': layerContent['layercolor'],
+                            'line-opacity': layerContent['layeropacity'],
+                            'line-width': layerContent['layerwidth'],
+                        },
+                    });
+
+
+
+                    // Add lot labels
+                    // Set layer contents
+                    var layerContent = {
+                        'sourceid': 'lotlines', // source id
+                        'sourcetype': 'geojson', // source type
+                        'sourcedata': 'Taipa_Central2_Lot.geojson', // data source
+                        'layerid': 'lotlabels', // layer id
+                        'layertype': 'symbol', // symbology type
+                        'layername': 'Lot Labels', // layer name for the legend
+                        'layervisibility': 'visible', // visibility of the layer
+                        'layerfield': ['get', 'LotID'], // categories
+                        'layeroverlap': false,
+                        'layeranchor': 'center',
+                        'layersize': 12,
+                        'layercolor': 'rgba(237, 102, 93, 1)', // color for each category; use rgba
+                        'layeropacity': 1, // circle opacity
+                    };
+
+                    // Add label layer
+                    map.addLayer({
+                        'id': layerContent['layerid'],
+                        'type': layerContent['layertype'],
+                        'source': layerContent['sourceid'],
+                        'layout': {
+                            'visibility': layerContent['layervisibility'],
+                            'text-field': layerContent['layerfield'],
+                            'text-size': layerContent['layersize'],
+                            'text-allow-overlap': layerContent['layeroverlap'],
+                            'text-anchor': layerContent['layeranchor'],
+                        },
+                        'paint': {
+                            'text-color': layerContent['layercolor'],
+                            'text-opacity': layerContent['layeropacity'],
+                        },
+                    });
+
+
+
                     // Add points
                     // Set layer contents
-                    const layerContent = {
+                    var layerContent = {
                         'sourceId': 'photoattr', // source id
                         'sourceType': 'geojson', // source type
                         'sourceData': 'photoattr.geojson', // data source
