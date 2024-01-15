@@ -370,10 +370,11 @@
                                             maxWidth: 'none', // max width of the popoup; 'none' to fit to the content                
                                             offset: MapboxglSpiderifier.popupOffsetForSpiderLeg(spiderLeg),
                                         });
-                                        let description = "<b>Photo ID: </b><span>" + spiderLeg.feature.photo + "</span><br>"; // description in the popup
+                                        let description = "<b>Author: </b><span>" + spiderLeg.feature.author + "</span><br>"; // description in the popup
+                                        description += "<b>Photo ID: </b><span>" + spiderLeg.feature.photo + "</span><br>";
                                         description += "<b>Datetime: </b><span>" + spiderLeg.feature.datetime + "</span><br>";
                                         description += "<b>Direction: </b><span>" + degree2Direction(spiderLeg.feature.bearing) + "</span><br>";
-                                        description += "<a target='_blank' href='photo/" + spiderLeg.feature.photo + "'><img src='photo/" + spiderLeg.feature.photo + "' width=300rem>";
+                                        description += "<a target='_blank' href='photo/" + spiderLeg.feature.author + '_' + spiderLeg.feature.photo + "'><img src='photo/" + spiderLeg.feature.author + '_' + spiderLeg.feature.photo + "' width=300rem>";
                                         spiderPopup.setHTML(description);
                                         spiderLeg.mapboxMarker.setPopup(spiderPopup);
                                     },
@@ -419,10 +420,11 @@
                     // Add click event
                     function clickOnMap(e) {
                         let coordinates = e.features[0].geometry.coordinates.slice(); // get point coordinates
-                        let description = "<b>Photo ID: </b><span>" + e.features[0].properties.photo + "</span><br>"; // description in the popup
+                        let description = "<b>Author: </b><span>" + e.features[0].properties.author + "</span><br>"; // description in the popup
+                        description += "<b>Photo ID: </b><span>" + e.features[0].properties.photo + "</span><br>";
                         description += "<b>Datetime: </b><span>" + e.features[0].properties.datetime + "</span><br>";
                         description += "<b>Direction: </b><span>" + degree2Direction(e.features[0].properties.bearing) + "</span><br>";
-                        description += "<a target='_blank' href='photo/" + e.features[0].properties.photo + "'><img src='photo/" + e.features[0].properties.photo + "' width=300rem>";
+                        description += "<a target='_blank' href='photo/" + e.features[0].properties.author + '_' + e.features[0].properties.photo + "'><img src='photo/" + e.features[0].properties.author + '_' + e.features[0].properties.photo + "' width=300rem>";
                         popup.setLngLat(coordinates).setHTML(description).addTo(map); //add popup
                     }
                     map.on('click', 'unclustered', clickOnMap);
@@ -447,13 +449,13 @@
                             offcanvasCard.className = "card";
                             offcanvasCard.id = jsonData.features[i].properties.photo.split('.')[0];
                             let offcanvasImg = document.createElement('img');
-                            offcanvasImg.src = "photo/" + jsonData.features[i].properties.photo;
+                            offcanvasImg.src = "photo/" + jsonData.features[i].properties.author + '_' + jsonData.features[i].properties.photo;
                             offcanvasImg.className = "card-img";
                             let offcanvasCardBody = document.createElement('div');
                             offcanvasCardBody.className = "card-body";
                             let offcanvasCardText = document.createElement('p');
                             offcanvasCardText.className = "card-text";
-                            offcanvasCardText.innerHTML = jsonData.features[i].properties.photo.split('.')[0] + '<br><br>';
+                            offcanvasCardText.innerHTML = jsonData.features[i].properties.author + '<br>' + jsonData.features[i].properties.photo.split('.')[0] + '<br>' + jsonData.features[i].properties.datetime.split('T')[0] + '<br><br>';
                             offcanvasCard.appendChild(offcanvasImg);
                             offcanvasCardBody.appendChild(offcanvasCardText);
                             offcanvasCol.appendChild(offcanvasCard);
@@ -465,10 +467,11 @@
                                 });
                                 console.log(offcanvasCard.id)
                                 let coordinates = [jsonData.features[i]['properties']['long'], jsonData.features[i]['properties']['lat']]; // get point coordinates
-                                let description = "<b>Photo ID: </b><span>" + jsonData.features[i].properties.photo + "</span><br>"; // description in the popup
+                                let description = "<b>Author: </b><span>" + jsonData.features[i].properties.author + "</span><br>"; // description in the popup
+                                description += "<b>Photo ID: </b><span>" + jsonData.features[i].properties.photo + "</span><br>";
                                 description += "<b>Datetime: </b><span>" + jsonData.features[i].properties.datetime + "</span><br>";
                                 description += "<b>Direction: </b><span>" + degree2Direction(jsonData.features[i].properties.bearing) + "</span><br>";
-                                description += "<a target='_blank' href='photo/" + jsonData.features[i].properties.photo + "'><img src='photo/" + jsonData.features[i].properties.photo + "' width=300rem>";
+                                description += "<a target='_blank' href='photo/" + jsonData.features[i].properties.author + '_' + jsonData.features[i].properties.photo + "'><img src='photo/" + jsonData.features[i].properties.author + '_' + jsonData.features[i].properties.photo + "' width=300rem>";
                                 popup.setLngLat(coordinates).setHTML(description).addTo(map); //add popup
                                 if (document.getElementById("offcanvasExpand").style.display == "none") {
                                     document.getElementsByClassName("offcanvas")[0].style.width = "400px";
