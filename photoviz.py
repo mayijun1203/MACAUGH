@@ -7,14 +7,14 @@ import os
 import PIL
 
 # path=os.gecwd()
-# path='C:/Users/MaY8/Desktop/GITHUB/MACAUGH/'
-path='C:/Users/mayij/Desktop/DOC/GITHUB/MACAUGH/'
+path='C:/Users/MaY8/Desktop/GITHUB/MACAUGH/'
+# path='C:/Users/mayij/Desktop/DOC/GITHUB/MACAUGH/'
 pd.options.display.max_columns=100
 
 
 
 # EXIF list
-imgpath=path+'original/Evonne/IMG_5675.JPG'
+imgpath=path+'original/Yijun/IMG_6354.JPG'
 with open(imgpath,'rb') as src:
     img=exif.Image(src)
 img.get_all()
