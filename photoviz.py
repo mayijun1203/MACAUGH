@@ -5,6 +5,7 @@ import shapely
 import exif
 import os
 import PIL
+import pillow_heif 
 
 # path=os.gecwd()
 path='C:/Users/MaY8/Desktop/GITHUB/MACAUGH/'
@@ -15,10 +16,20 @@ pd.options.display.max_columns=100
 
 # EXIF list
 # imgpath=path+'original/Yijun/IMG_6354.JPG'
-imgpath='C:/Users/MaY8/Desktop/a.jpg'
-with open(imgpath,'rb') as src:
-    img=exif.Image(src)
-img.get_all()
+# imgpath='C:/Users/MaY8/Desktop/a.jpg'
+# with open(imgpath,'rb') as src:
+#     img=exif.Image(src)
+# img.get_all()
+
+
+
+# Convert HEIC to JPG
+for i in os.listdir(path+'original/Yangfei'):
+    pillow_heif.register_heif_opener()
+    imgpath=path+'original/Yangfei/'+i
+    img=PIL.Image.open(imgpath)
+    exif_dict=pillow_heif.read_heif(imgpath).info['exif']
+    img.save(path+'original/Yangfei/'+i.replace('HEIC','JPG'),exif=exif_dict)
 
 
 
@@ -34,7 +45,7 @@ def decimalcoords(orgcoords,ref):
 
 # Execution
 df=[]
-for i in ['Yijun','Evonne','Jolie','Helen','Yangfei']:
+for i in ['Yijun','Yangfei']:
     for j in os.listdir(path+'original/'+i):
         with open(path+'original/'+i+'/'+j,'rb') as src:
             img=exif.Image(src)
@@ -65,7 +76,7 @@ df.to_file(path+'photoattr.geojson',crs=4326, driver='GeoJSON')
 
 
 # Compress and rotate photos
-for i in ['Yijun','Evonne','Jolie','Helen','Yangfei']:
+for i in ['Yijun','Yangfei']:
     for j in os.listdir(path+'original/'+i):
         tp=PIL.Image.open(path+'original/'+i+'/'+j)
         ort=df.loc[((df['author']==i)&(df['photo']==j)),'orientation'][0]
