@@ -45,7 +45,7 @@ def decimalcoords(orgcoords,ref):
 
 # Execution
 df=[]
-for i in ['Yijun','Yangfei','Evonne']:
+for i in ['Yijun','Yangfei','Evonne','Jolie']:
     for j in os.listdir(path+'original/'+i):
         with open(path+'original/'+i+'/'+j,'rb') as src:
             img=exif.Image(src)
@@ -76,7 +76,7 @@ df.to_file(path+'photoattr.geojson',crs=4326, driver='GeoJSON')
 
 
 # Compress and rotate photos
-for i in ['Yijun','Yangfei','Evonne']:
+for i in ['Yijun','Yangfei','Evonne','Jolie']:
     for j in os.listdir(path+'original/'+i):
         tp=PIL.Image.open(path+'original/'+i+'/'+j)
         ort=df.loc[((df['author']==i)&(df['photo']==j)),'orientation'][0]
