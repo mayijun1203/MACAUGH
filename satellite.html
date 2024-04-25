@@ -462,7 +462,7 @@
                                         description += "<b>Photo ID: </b><span>" + spiderLeg.feature.photo + "</span><br>";
                                         description += "<b>Datetime: </b><span>" + spiderLeg.feature.datetime.replaceAll('T', ' ') + "</span><br>";
                                         description += "<b>Direction: </b><span>" + degree2Direction(spiderLeg.feature.bearing) + "</span><br>";
-                                        description += "<a target='_blank' href='photo/" + spiderLeg.feature.author + '_' + spiderLeg.feature.photo + "'><img src='photo/" + spiderLeg.feature.author + '_' + spiderLeg.feature.photo + "' width=300rem>";
+                                        description += "<a target='_blank' href='original/" + spiderLeg.feature.author + '/' + spiderLeg.feature.photo + "'><img src='photo/" + spiderLeg.feature.author + '_' + spiderLeg.feature.photo + "' width=300rem>";
                                         spiderPopup.setHTML(description);
                                         spiderLeg.mapboxMarker.setPopup(spiderPopup);
                                     },
@@ -512,7 +512,7 @@
                         description += "<b>Photo ID: </b><span>" + e.features[0].properties.photo + "</span><br>";
                         description += "<b>Datetime: </b><span>" + e.features[0].properties.datetime.replaceAll('T', ' ') + "</span><br>";
                         description += "<b>Direction: </b><span>" + degree2Direction(e.features[0].properties.bearing) + "</span><br>";
-                        description += "<a target='_blank' href='photo/" + e.features[0].properties.author + '_' + e.features[0].properties.photo + "'><img src='photo/" + e.features[0].properties.author + '_' + e.features[0].properties.photo + "' width=300rem>";
+                        description += "<a target='_blank' href='original/" + e.features[0].properties.author + '/' + e.features[0].properties.photo + "'><img src='photo/" + e.features[0].properties.author + '_' + e.features[0].properties.photo + "' width=300rem>";
                         popup.setLngLat(coordinates).setHTML(description).addTo(map); //add popup
                     }
                     map.on('click', 'unclustered', clickOnMap);
@@ -559,7 +559,7 @@
                                 description += "<b>Photo ID: </b><span>" + jsonData.features[i].properties.photo + "</span><br>";
                                 description += "<b>Datetime: </b><span>" + jsonData.features[i].properties.datetime.replaceAll('T', ' ') + "</span><br>";
                                 description += "<b>Direction: </b><span>" + degree2Direction(jsonData.features[i].properties.bearing) + "</span><br>";
-                                description += "<a target='_blank' href='photo/" + jsonData.features[i].properties.author + '_' + jsonData.features[i].properties.photo + "'><img src='photo/" + jsonData.features[i].properties.author + '_' + jsonData.features[i].properties.photo + "' width=300rem>";
+                                description += "<a target='_blank' href='original/" + jsonData.features[i].properties.author + '/' + jsonData.features[i].properties.photo + "'><img src='photo/" + jsonData.features[i].properties.author + '_' + jsonData.features[i].properties.photo + "' width=300rem>";
                                 popup.setLngLat(coordinates).setHTML(description).addTo(map); //add popup
                                 if (document.getElementById("offcanvasExpand").style.display == "none") {
                                     document.getElementsByClassName("offcanvas")[0].style.width = "400px";

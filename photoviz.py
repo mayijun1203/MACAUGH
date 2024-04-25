@@ -5,11 +5,11 @@ import shapely
 import exif
 import os
 import PIL
-import pillow_heif 
+# import pillow_heif
 
 # path=os.gecwd()
-path='C:/Users/MaY8/Desktop/GITHUB/MACAUGH/'
-# path='C:/Users/mayij/Desktop/DOC/GITHUB/MACAUGH/'
+# path='C:/Users/MaY8/Desktop/GITHUB/MACAUGH/'
+path='C:/Users/mayij/Desktop/DOC/GITHUB/MACAUGH/'
 pd.options.display.max_columns=100
 
 
@@ -86,4 +86,4 @@ for i in ['Yijun','Yangfei','Evonne','Jolie']:
             tp=tp.rotate(270, expand=True)
         elif ort==8:
             tp=tp.rotate(90, expand=True) 
-        tp.save(path+'photo/'+i+'_'+j,optimize=True,quality=30)
+        tp.save(path+'photo/'+i+'_'+j,optimize=True,quality=10)
